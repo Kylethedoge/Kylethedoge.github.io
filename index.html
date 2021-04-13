@@ -1,23 +1,113 @@
 <!-- html is the some markups -->
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, intial-scale=1.0"/>
-  </head>
-  <body>
-    <canvas id="canvas" width="400" height="500" style="border: 1px solid black;"></canvas>
-    <!-- we are going to add music -->
-    <audio loop id="background_music">
-      <source src="music/game_music.mp3">
-    </audio>
-    <audio id="bullet_music">
-      <source src="music/bullet.mp3">
-    </audio>
-    <img id="logo" src="img/logo.png" width="250" height="50" style="position: absolute; left: 50px; top: 100px">
-    <img id="btnStart" onclick="onStart()" src="img/start.png" style="position: absolute; left: 180px; top: 200px">
-    <!-- <button id="btnStart" onclick="onStart()">Start</button> -->
-    <!-- script is the place we write the code -->
-<!-- we are using javascript -->
-    <script src="js/game.js"></script>
-  </body>
+  <canvas id="canvas" width="400" height="500" style="border: 1px solid black;"></canvas>
 </html>
+
+<!-- script is the place we write the code -->
+<!-- we are using javascript -->
+<script>
+  // we get the context from html
+  var ctx = document.getElementById("canvas").getContext("2d");
+  var WIDTH = 400;
+  var HEIGHT = 500;
+
+  // draw background
+  var img_background = new Image();
+  img_background.src = "img/background1.jpg";
+  img_background.onload = function() {
+    ctx.drawImage(img_background, 0, 0, WIDTH, HEIGHT);
+  }
+
+  // we are going to define a Player class
+  class Player {
+    // you need a constructor
+    constructor(id, x, y, speed, src, width, height){
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.width = width;
+      this.height = height;
+      // we need to convert src into image
+      this.img = new Image();
+      this.img.src = src;
+    }
+  }
+
+  var player = new Player(0, 180, HEIGHT, -5, "img/player.png", 60, 40);
+
+  class Enemy {
+    constructor(id, x, y, speed, src, width, height){
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.speed = speed;
+      this.width = width;
+      this.height = height;
+      // we need to convert src into image
+      this.img = new Image();
+      this.img.src = src;
+    }
+  }
+  // var enemy1 = new Enemy(1, 50, 0, 5, "img/enemy1.png", 28, 35);
+  // var enemy2 = new Enemy(2, 150, 0, 3, "img/enemy2.png", 45, 35);
+  // var enemy3 = new Enemy(3, 250, 0, 2, "img/boss.png", 106, 104);
+  var enemyList = {};
+
+  function addEnemy(id, x, y, speed, src, width, height){
+    var enemy = new Enemy(id, x, y, speed, src, width, height);
+    enemyList[id] = enemy;
+  }
+  addEnemy(1, 50, 0, 5, "img/enemy1.png", 28, 35);
+  addEnemy(2, 150, 0, 3, "img/enemy2.png", 45, 35);
+  addEnemy(3, 250, 0, 2, "img/boss.png", 106, 104);
+
+  function checkCollision(entity1, entity2){
+    var left1 = entity1.x;
+    var top1 = entity1.y;
+    var right1 = entity1.x + entity1.width;
+    var bottom1 = entity1.y + entity1.height;
+    var left2 = entity2.x;
+    var top2 = entity2.y;
+    var right2 = entity2.x + entity2.width;
+    var bottom2 = entity2.y + entity2.height;
+    return (left1 > left2 && left1 < right2 && top1 > top2 && top1 < bottom2) ||
+           (right1 > left2 && right1 < right2 && top1 > top2 && top1 < bottom2) ||
+           (left1 > left2 && left1 < right2 && bottom1 > top2 && bottom1 < bottom2) ||
+           (right1 > left2 && right1 < right2 && bottom1 > top2 && bottom1 < bottom2) ||
+           (left2 > left1 && left2 < right1 && top2 > top1 && top2< bottom1) ||
+           (left2 > left1 && left2 < right1 && bottom2 > top1 && bottom2 < bottom1)||
+           (right2 > left1 && right2 < right1 && top2 > top1 && top2 < bottom1) ||
+           (right2 > left1 && right2 < right1 && bottom2 > top1 && bottom2 < bottom1);
+  }
+  // this is the function to update entity (entity could be player, could enemy1)
+  function updateEntity(entity){
+    entity.y += entity.speed;
+    // if your plane is out of boundary, reset it to the bottom
+    if (entity.y < 0) {
+      entity.y = HEIGHT;
+    }
+    // if your enemy is out of boundray, also reset it to the top
+    else if (entity.y > HEIGHT){
+      entity.y = 0;
+    }
+    ctx.drawImage(entity.img, entity.x, entity.y, entity.width, entity.height);
+  }
+
+  // we need to move the player and enemy1
+  setInterval(update, 40);  // 40 milli-seconds, 1 second = 1000 ms, 1 sec => 25 times
+
+  function update() {
+    ctx.clearRect(0, 0, WIDTH, HEIGHT); // this is to clean up everything
+    ctx.drawImage(img_background, 0, 0, WIDTH, HEIGHT);
+    updateEntity(player);
+    // you need to learn how to loop through enemyList
+    for(var id in enemyList){
+      updateEntity(enemyList[id]);
+      if(checkCollision(enemyList[id], player)){
+        console.log("Collision!")
+      }
+    }
+  }
+</script>
 
