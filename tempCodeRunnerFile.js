@@ -1,1 +1,0 @@
-ctx.fillText("score: " + score, 150, 25);
